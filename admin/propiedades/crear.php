@@ -5,10 +5,58 @@
 require "../../includes/config/database.php";
 $db = conectarDB();
 
+//Array con mjes de errores
+$errores = [];
+//Ejecutas el código después de que el usuario envía el formulario
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    echo "<pre>";
-    var_dump($_POST);
-    echo "</pre>";
+    // echo "<pre>";
+    // var_dump($_POST);
+    // echo "</pre>";
+
+    $titulo = $_POST['titulo'];
+    $precio = $_POST['precio'];
+    $descripcion = $_POST['descripcion'];
+    $habitaciones = $_POST['habitaciones'];
+    $wc = $_POST['wc'];
+    $estacionamiento = $_POST['estacionamiento'];
+    $vendedores_id = $_POST['vendedor'];
+
+    if (!$titulo) {
+        $errores[] = "Debes añadir un título"; //los mensajes de error comienzan a agregarse al final del array
+    }
+    if (!$precio) {
+        $errores[] = "Debes añadir un precio";
+    }
+    if (strlen(!$descripcion) < 50) {
+        $errores[] = "La descripción es obligatoria y debe tener al menos 50 caracteres";
+    }
+    if (!$habitaciones) {
+        $errores[] = "Debes añadir un número de habitaciones";
+    }
+    if (!$wc) {
+        $errores[] = "Debes añadir un número de baños";
+    }
+    if (!$estacionamiento) {
+        $errores[] = "Debes añadir un número de estacionamiento";
+    }
+    if (!$vendedores_id) {
+        $errores[] = "Debes elegir un vendedor";
+    }
+
+    //revisar que no existan errores
+    if (empty($errores)) {
+        //insertar en DB
+        $query = " INSERT INTO propiedades (titulo, precio, descripcion, habitaciones, wc, estacionamiento, vendedores_id) VALUES ( '$titulo', '$precio', '$descripcion', '$habitaciones', '$wc', '$estacionamiento', '$vendedores_id' )";
+
+        //echo $query;
+
+        $resultado = mysqli_query($db, $query);
+
+        if ($resultado) {
+            echo "insertado correctamente";
+        }
+    }
 }
 //
 require '../../includes/funciones.php';
@@ -19,6 +67,11 @@ incluirTemplate('header')
 <main class="contenedor seccion">
     <h1>Crear</h1>
     <a href="/admin" class="boton boton-verde">Volver</a>
+
+    <?php
+    foreach ($errores as $error) : ?>
+        <div class="alerta error"><?php echo $error ?></div>
+    <?php endforeach; ?>
 
     <form class="formulario" method="POST" action="/admin/propiedades/crear.php">
         <fieldset>
@@ -31,7 +84,7 @@ incluirTemplate('header')
             <input type="number" name="precio" id="precio" placeholder="Precio propiedad">
 
             <label for="imagen" class="">Imagen</label>
-            <input type="file" name="imagen" id="imagen" accept="image/jpeg, image/png">
+            <input type="file" id="imagen" accept="image/jpeg, image/png">
 
             <label for="descripcion" class="">Descripción</label>
             <textarea type="text" name="descripcion" id="descripcion" placeholder="Descripción propiedad"></textarea>
@@ -53,8 +106,8 @@ incluirTemplate('header')
 
         <fieldset>
             <legend>Vendedor</legend>
-
-            <select>
+            <select name="vendedor">
+                <option value="">-- Selecciona un vendedor --</option>
                 <option value="1">Juan</option>
                 <option value="2">Diego</option>
             </select>
